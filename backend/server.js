@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
+const cors = require('cors');
+app.use(cors()); // cross origin resource sharing activat pt BE cu FE sa poata comunica
 app.use(express.json()); // citire json din request
 app.use('/api/auth', require('./routes/authRoutes')); // import rutele de autentificare
 const PORT = process.env.PORT || 5000;

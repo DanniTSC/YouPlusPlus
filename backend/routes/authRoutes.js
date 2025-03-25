@@ -2,6 +2,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const authMiddleware = require('../middleware/authMiddleware');
+
 
 const router = express.Router();
 
@@ -46,6 +48,31 @@ router.post('/login', async (req, res) => {
 
         res.json({ token, userId: user._id });
 
+    } catch (error) {
+        res.status(500).json({ message: 'Something went wrong' });
+    }
+});
+
+
+// ruta protejata doar utilizatorii autentificați pot accesa
+router.get('/profile', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password'); // elimin parola din raspuns
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Something went wrong' });
+    }
+});
+
+
+router.get('/home', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password'); // Eliminăm parola din răspuns
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        res.json(user);
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong' });
     }
