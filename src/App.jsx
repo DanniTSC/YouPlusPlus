@@ -5,6 +5,7 @@ import Home from './components/Home';
 import Layout from './layout/Layout';
 import PrivateRoute from './components/PrivateRoute';
 
+
 const App = () => {
   return (
     <Router>

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import StreakChart from '../components/StreakChart';
+import { toast } from 'react-hot-toast';
 
 const Home = () => {
   const [user, setUser] = useState(null);
@@ -7,53 +8,50 @@ const Home = () => {
   const [newHabit, setNewHabit] = useState('');
   const [streak, setStreak] = useState(0);
   const [badges, setBadges] = useState([]);
-  const [weeklyData, setWeeklyData] = useState([0, 0, 0, 0, 0, 0, 0]); // inițial
+  const [weeklyData, setWeeklyData] = useState([0, 0, 0, 0, 0, 0, 0]);
   const [quote, setQuote] = useState('');
 
-  // Fetch user + habits + evaluare streak
+  const toastFiredRef = useRef(false);
+
   useEffect(() => {
     const fetchEverything = async () => {
       const token = localStorage.getItem('token');
       if (!token) return;
-  
+
       const headers = { Authorization: token };
-  
+
       try {
-        // 1️⃣ User info
-        const userRes = await fetch('http://localhost:5000/api/auth/home', { headers });
+        const [userRes, habitsRes, quoteRes, evalRes] = await Promise.all([
+          fetch('http://localhost:5000/api/auth/home', { headers }),
+          fetch('http://localhost:5000/api/habits', { headers }),
+          fetch('http://localhost:5000/api/quote', { headers }),
+          fetch('http://localhost:5000/api/habits/evaluate', { headers }),
+        ]);
+
         const userData = await userRes.json();
-        setUser(userData);
-  
-        // 2️⃣ Habits pentru azi
-        const habitsRes = await fetch('http://localhost:5000/api/habits', { headers });
         const habitsData = await habitsRes.json();
-        setHabits(habitsData);
-  
-        // 3️⃣ Quote motivațional
-        const quoteRes = await fetch('http://localhost:5000/api/quote', { headers });
         const quoteData = await quoteRes.json();
-        setQuote(quoteData.quote);
-  
-        // 4️⃣ Streak, badge-uri, progres săptămânal
-        const evalRes = await fetch('http://localhost:5000/api/habits/evaluate', { headers });
         const evalData = await evalRes.json();
+
+        setUser(userData);
+        setHabits(habitsData);
+        setQuote(quoteData.quote);
         setStreak(evalData.streak);
         setBadges(evalData.badges);
         setWeeklyData(evalData.weeklyData);
-  
+
       } catch (err) {
-        console.error('❌ Eroare la fetch:', err);
+        console.error('❌ Eroare fetch:', err);
       }
     };
-  
+
     fetchEverything();
   }, []);
 
-  // Add new habit (POST)
   const addHabit = async () => {
     const token = localStorage.getItem('token');
     if (!newHabit.trim()) return;
-  
+
     await fetch('http://localhost:5000/api/habits', {
       method: 'POST',
       headers: {
@@ -62,22 +60,17 @@ const Home = () => {
       },
       body: JSON.stringify({ name: newHabit }),
     });
-  
+
     setNewHabit('');
-  
-    // ⬇️ Refacem fetchul complet după adăugare
-    const res = await fetch('http://localhost:5000/api/habits', {
-      headers: { Authorization: token },
-    });
+    const res = await fetch('http://localhost:5000/api/habits', { headers: { Authorization: token } });
     const freshHabits = await res.json();
     setHabits(freshHabits);
   };
 
-  // Toggle habit completion (PATCH)
   const toggleHabit = async (id, current) => {
     const token = localStorage.getItem('token');
 
-    const response = await fetch(`http://localhost:5000/api/habits/${id}`, {
+    await fetch(`http://localhost:5000/api/habits/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -86,11 +79,28 @@ const Home = () => {
       body: JSON.stringify({ completed: !current }),
     });
 
-    const updated = await response.json();
-    setHabits((prev) => prev.map((h) => (h._id === id ? updated : h)));
+    const res = await fetch('http://localhost:5000/api/habits', { headers: { Authorization: token } });
+    const updated = await res.json();
+    setHabits(updated);
+
+    const completed = updated.filter(h => h.completed).length;
+    const total = updated.length;
+    const reached50 = total > 0 && completed >= Math.floor(total / 2);
+
+    if (reached50 && !toastFiredRef.current) {
+      toast.success('🥳 Bravo! Ai completat peste 50% din obiceiurile zilei. Streak-ul tău e salvat!');
+      toastFiredRef.current = true;
+    }
+
+    // 🔄 Actualizare streak & badge-uri fără blocaje
+    const evalRes = await fetch('http://localhost:5000/api/habits/evaluate', { headers: { Authorization: token } });
+    const evalData = await evalRes.json();
+
+    setStreak(evalData.streak);
+    setBadges(evalData.badges);
+    setWeeklyData(evalData.weeklyData);
   };
 
-  // Delete habit (DELETE)
   const deleteHabit = async (id) => {
     const token = localStorage.getItem('token');
 
@@ -109,7 +119,7 @@ const Home = () => {
           Bun venit, {user?.name || 'Utilizator'}! 👋
         </h1>
         <p className="text-xl text-gray-700 italic">
-        {quote || "Citat motivațional..."}
+          {quote || "Citat motivațional..."}
         </p>
       </div>
 
@@ -141,9 +151,7 @@ const Home = () => {
             <li
               key={habit._id}
               className={`flex items-center justify-between border p-3 rounded-md transition ${
-                habit.completed
-                  ? 'bg-green-50 border-green-300'
-                  : 'border-gray-300'
+                habit.completed ? 'bg-green-50 border-green-300' : 'border-gray-300'
               }`}
             >
               <span className={`text-lg ${habit.completed ? 'line-through text-green-700' : ''}`}>
@@ -153,9 +161,7 @@ const Home = () => {
                 <button
                   onClick={() => toggleHabit(habit._id, habit.completed)}
                   className={`px-3 py-1 rounded-md text-white font-medium transition ${
-                    habit.completed
-                      ? 'bg-green-500 hover:bg-green-600'
-                      : 'bg-[#EE5249] hover:bg-red-600'
+                    habit.completed ? 'bg-green-500 hover:bg-green-600' : 'bg-[#EE5249] hover:bg-red-600'
                   }`}
                 >
                   {habit.completed ? 'Completat' : 'Bifează'}

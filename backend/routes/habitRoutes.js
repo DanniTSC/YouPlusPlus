@@ -1,54 +1,92 @@
 const express = require('express');
 const router = express.Router();
 const Habit = require('../models/Habit');
+const User = require('../models/User');
 const auth = require('../middleware/authMiddleware');
 
-// GET toate obiceiurile pentru ziua curentă
+// 📥 GET toate obiceiurile de azi
 router.get('/', auth, async (req, res) => {
-  const today = new Date().setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const habits = await Habit.find({ user: req.user.id, date: today });
   res.json(habits);
 });
 
+// ✅ EVALUARE Streak, Badge-uri, Grafic + todayComplete + todayFailed
 router.get('/evaluate', auth, async (req, res) => {
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay()); // duminică
-  
-    const habits = await Habit.find({
-      user: req.user.id,
-      date: { $gte: startOfWeek },
-    });
-  
-    // grupăm pe zi
-    const days = Array(7).fill(0); // L-M-M-J-V-S-D
-  
-    habits.forEach(h => {
-      const day = new Date(h.date).getDay(); // 0 = Duminică
-      if (h.completed) days[day] += 1;
-    });
-  
-    // streak logica (simplă pt demo)
-    const streak = await Habit.aggregate([
-      { $match: { user: req.user._id, completed: true } },
-      { $group: { _id: "$date" } },
-      { $count: "daysWithCompletion" }
-    ]);
-  
-    res.json({
-      weeklyData: days,
-      streak: streak[0]?.daysWithCompletion || 0,
-      badges: streak[0]?.daysWithCompletion >= 30
-        ? ['Voință de Aur 🏅']
-        : streak[0]?.daysWithCompletion >= 7
-          ? ['Voință de Fier 💪']
-          : streak[0]?.daysWithCompletion >= 3
-            ? ['Un Nou Start 🚀']
-            : []
-    });
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const user = await User.findById(req.user.id);
+
+  // --- 1️⃣ Obiceiuri de azi
+  const habitsToday = await Habit.find({ user: req.user.id, date: today });
+  const completed = habitsToday.filter(h => h.completed).length;
+  const total     = habitsToday.length;
+
+  // Pragul de 50%
+  const required  = Math.floor(total / 2);
+  const reached50 = total > 0 && completed >= required;
+  const failed50  = total > 0 && completed <  required;
+
+  let streakChanged = false;
+
+  // Data ultimului check (ca să nu aplicăm de două ori în aceeași zi)
+  const lastDate = user.lastStreakDate ? new Date(user.lastStreakDate) : null;
+  const isNewDay = !lastDate || lastDate.getTime() !== today.getTime();
+
+  if (isNewDay) {
+    if (reached50) {
+      // --- 2️⃣ cresc streak-ul
+      user.streak = (user.streak || 0) + 1;
+      streakChanged = true;
+
+      // --- 3️⃣ actualizez badge-urile
+      const newBadges = [];
+      if (user.streak >= 30) newBadges.push('Voință de Aur 🏅');
+      else if (user.streak >= 7) newBadges.push('Voință de Fier 💪');
+      else if (user.streak >= 3) newBadges.push('Un Nou Start 🚀');
+      user.badges = newBadges;
+    }
+    else if (failed50) {
+      // --- reset streak
+      user.streak = 0;
+      // NU ating badges
+      streakChanged = true;
+    }
+
+    if (streakChanged) {
+      user.lastStreakDate = today;
+      await user.save();
+    }
+  }
+
+  // --- 4️⃣ GRAFIC: Progres săptămânal
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay()); // Duminică
+
+  const habitsWeek = await Habit.find({
+    user: req.user.id,
+    date: { $gte: startOfWeek }
   });
 
-// POST un habit nou
+  const weeklyData = Array(7).fill(0);
+  habitsWeek.forEach(h => {
+    const day = new Date(h.date).getDay(); // 0 = Duminică
+    if (h.completed) weeklyData[day] += 1;
+  });
+
+  res.json({
+    weeklyData,
+    streak: user.streak,
+    badges: user.badges,
+    todayComplete: reached50 ,
+    todayFailed:   failed50 && streakChanged
+  });
+});
+
+
+// ➕ POST habit
 router.post('/', auth, async (req, res) => {
   const { name } = req.body;
   const habit = new Habit({ user: req.user.id, name });
@@ -56,7 +94,7 @@ router.post('/', auth, async (req, res) => {
   res.status(201).json(habit);
 });
 
-// PATCH toggle completed
+// 📝 PATCH toggle completed
 router.patch('/:id', auth, async (req, res) => {
   const habit = await Habit.findOneAndUpdate(
     { _id: req.params.id, user: req.user.id },
@@ -66,14 +104,10 @@ router.patch('/:id', auth, async (req, res) => {
   res.json(habit);
 });
 
-// DELETE habit
+// ❌ DELETE habit
 router.delete('/:id', auth, async (req, res) => {
   await Habit.findOneAndDelete({ _id: req.params.id, user: req.user.id });
   res.json({ message: 'Șters cu succes' });
 });
-
-
-  
-
 
 module.exports = router;
