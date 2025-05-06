@@ -10,6 +10,8 @@ app.use(express.json()); // citire json din request
 app.use('/api/auth', require('./routes/authRoutes')); // import rutele de autentificare
 app.use('/api/habits', require('./routes/habitRoutes'));
 app.use('/api/quote', require('./routes/quoteRoutes'));
+app.use('/api/journal', require('./routes/journalRoutes'));
+
 const PORT = process.env.PORT || 5000;
 
 mongoose.connect(process.env.MONGO_URI)
