@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Auth from './components/Auth';
 import Home from './components/Home';
 import Layout from './layout/Layout';
+import Journal from './components/Jurnal';
 import PrivateRoute from './components/PrivateRoute';
 
 
@@ -11,6 +12,7 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/auth" element={<Auth />} />
+
         <Route
           path="/home"
           element={
@@ -21,7 +23,22 @@ const App = () => {
             </PrivateRoute>
           }
         />
+
+          <Route
+            path="/journal"
+            element={
+              <PrivateRoute>
+                <Layout>
+                <Journal />
+              </Layout>
+            </PrivateRoute>
+         }
+        />
+          
+
+
         <Route path="/" element={<Navigate to="/auth" />} />
+      
       </Routes>
     </Router>
   );
