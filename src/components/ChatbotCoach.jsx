@@ -67,7 +67,7 @@ const ChatbotCoach = () => {
       {isOpen && (
         <div className="fixed bottom-20 right-6 w-80 bg-white border border-gray-300 shadow-xl rounded-lg overflow-hidden z-50 flex flex-col h-[420px]">
           <div className="bg-[#8E1C3B] text-white px-4 py-2 font-semibold text-sm">
-            🧠 CoachBot – Mentorul tău digital
+            🧠 Echo – Mentorul tău digital
           </div>
 
           <div className="flex-1 p-3 overflow-y-auto text-sm space-y-2 bg-[#FFF7F3]">

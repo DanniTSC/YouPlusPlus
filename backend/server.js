@@ -11,6 +11,7 @@ app.use('/api/auth', require('./routes/authRoutes')); // import rutele de autent
 app.use('/api/habits', require('./routes/habitRoutes'));
 app.use('/api/quote', require('./routes/quoteRoutes'));
 app.use('/api/journal', require('./routes/journalRoutes'));
+app.use('/api/nutrition', require('./routes/nutritionRoutes'));
 
 const PORT = process.env.PORT || 5000;
 
