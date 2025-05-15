@@ -6,6 +6,7 @@ import Layout from './layout/Layout';
 import Journal from './components/Jurnal';
 import Nutrition from './components/Nutrition';
 import Disclaimer from './components/Disclaimer';
+import MindfulnessPage from './components/MindfulnessPage';
 import PrivateRoute from './components/PrivateRoute';
 
 const App = () => {
@@ -47,7 +48,18 @@ const App = () => {
           }
         />
 
-        <Route path="/terms" element={<Disclaimer />} />
+        <Route
+          path="/meditation"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <MindfulnessPage />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+
+
 
         <Route path="/" element={<Navigate to="/auth" />} />
       </Routes>
