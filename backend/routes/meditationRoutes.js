@@ -48,12 +48,15 @@ router.post('/complete', auth, async (req, res) => {
 router.get('/recommendations', auth, async (req, res) => {
   try {
     const sessions = await MeditationSession.find({ user: req.user.id });
-    const byDur = { 300:[],600:[],1200:[] };
-    sessions.forEach(s => {
-      const d = s.duration;
-      const delta = s.moodAfter.score - s.moodBefore.score;
-      if (byDur[d]) byDur[d].push(delta);
-    });
+    const byDur = { 300: [], 600: [], 1200: [] };
+
+    sessions
+      .filter(s => s.moodAfter && s.moodBefore)   // <–– FILTRAREA
+      .forEach(s => {
+        const d = s.duration;
+        const delta = s.moodAfter.score - s.moodBefore.score;
+        if (byDur[d]) byDur[d].push(delta);
+      });
     const stats = {};
     let best = null, bestAvg = -Infinity;
     for (const [dur, arr] of Object.entries(byDur)) {

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import MoodForm from '../components/MoodForm';
 import MindfulnessTimer from '../components/MindfulnessTimer';
 import BoxBreathing from '../components/BoxBreathing';
+import RecommendationCard from '../components/RecommendationCard';
+import SoundPlayer from '../components/SoundPlayer';
 import { toast } from 'react-hot-toast';
 
 const durations = [
@@ -9,180 +11,221 @@ const durations = [
   { label: '10 min', sec: 600 },
   { label: '20 min', sec: 1200 },
   { label: '10 sec', sec: 10 },
-
 ];
 
 const MindfulnessPage = () => {
-  const [mode, setMode] = useState(null); // "timer" sau "box"
-  const [step, setStep] = useState('selectMode');
+  const [mode, setMode] = useState(null);
   const [duration, setDuration] = useState(0);
   const [customMinutes, setCustomMinutes] = useState('');
   const [sessionId, setSessionId] = useState(null);
+  const [step, setStep] = useState(0);
+  const [moodBefore, setMoodBefore] = useState(null);
+  const [recommendationText, setRecommendationText] = useState('');
   const token = localStorage.getItem('token');
 
-  // ➤ Selectare mod (timer sau box)
-  const chooseMode = (selected) => {
-    setMode(selected);
-    setStep('selectDuration');
-  };
-
-  const pickDuration = sec => {
-    setDuration(sec);
-    setStep('beforeMood');
-  };
-
-  const handleCustomTime = e => {
+  const handleCustomTime = (e) => {
     e.preventDefault();
-    const minutes = parseInt(customMinutes);
-    if (!minutes || minutes <= 0 || minutes > 120) {
-      toast.error('Timpul trebuie să fie între 1 și 120 minute');
+    const min = parseInt(customMinutes);
+    if (!min || min < 1 || min > 120) {
+      toast.error('Introdu un timp între 1 și 120 minute.');
       return;
     }
-    pickDuration(minutes * 60);
+    setDuration(min * 60);
   };
 
-  const handleMoodBefore = async mb => {
+  const handleStartSession = async (mb) => {
+    setMoodBefore(mb);
     const res = await fetch('http://localhost:5000/api/meditation/start', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: token
+        Authorization: token,
       },
       body: JSON.stringify({
-        type: mode,
+        type: mode === 'timer' ? 'mindfulness' : 'box-breathing',
         duration,
-        moodBefore: mb
-      })
+        moodBefore: mb,
+      }),
     });
     const data = await res.json();
     setSessionId(data.sessionId);
-    setStep('meditating');
+    setStep(1); // Start meditație
   };
 
-  const handleMoodAfter = async ma => {
+  const handleEndSession = async (ma) => {
     await fetch('http://localhost:5000/api/meditation/complete', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: token
+        Authorization: token,
       },
       body: JSON.stringify({
         sessionId,
         endedAt: new Date(),
-        moodAfter: ma
-      })
+        moodAfter: ma,
+      }),
     });
-    toast.success('🧘‍♀️ Sesiunea a fost salvată!');
-    setStep('recommendation');
 
-    // 👉 Poți adăuga aici un GET către `/api/meditation/recommendations` dacă ai recomandări dinamice
-  };
+    toast.success('Sesiune salvată ✅');
 
-  const handleTimerComplete = () => {
-    setStep('afterMood');
+    // Fetch recomandare
+    const res = await fetch('http://localhost:5000/api/meditation/recommendations', {
+      headers: { Authorization: token },
+    });
+    const data = await res.json();
+    setRecommendationText(data.message);
+    setStep(3); // Trecem la recomandare
+
+    setTimeout(() => {
+      setStep(0);
+      setSessionId(null);
+      setMode(null);
+      setDuration(0);
+      setMoodBefore(null);
+      setRecommendationText('');
+      setCustomMinutes('');
+    }, 15000);
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-12 bg-white rounded-lg shadow-md p-8 text-[#333]">
-      {/* Step 0 – Alegere mod */}
-      {step === 'selectMode' && (
-        <>
-          <h1 className="text-3xl md:text-4xl font-bold text-center mb-10 text-[#8E1C3B]">🧘 Alege tipul meditației</h1>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div className="max-w-5xl mx-auto mt-12 bg-white rounded-lg shadow-md p-8 text-[#333] space-y-12">
+
+      {/* 1️⃣ Selectare tip */}
+      <section>
+        <h1 className="text-3xl font-bold text-[#8E1C3B] mb-4">🧘 Alege tipul meditației</h1>
+        <div className="grid sm:grid-cols-2 gap-6">
+          {['box-breathing', 'timer'].map(opt => (
             <button
-              onClick={() => chooseMode('timer')}
-              className="bg-[#E4F7ED] hover:bg-[#cef0e0] p-6 rounded-lg text-xl shadow text-left"
+              key={opt}
+              onClick={() => setMode(opt)}
+              className={`p-6 border rounded-lg text-left transition ${
+                mode === opt ? 'bg-[#FFD045]/40 border-[#8E1C3B]' : 'bg-gray-50'
+              }`}
             >
-              ⏱️ Mindfulness Timer<br /><span className="text-sm">Cronometru simplu, fără audio</span>
+              <h2 className="text-xl font-semibold">
+                {opt === 'box-breathing' ? '🔲 Box Breathing' : '⏱ Mindfulness Timer'}
+              </h2>
+              <p className="text-sm mt-1">
+                {opt === 'box-breathing'
+                  ? 'Respirație ghidată 4-4-4-4 pentru calm instantaneu'
+                  : 'Timer cu focus pe respirație conștientă'}
+              </p>
             </button>
-            <button
-              onClick={() => chooseMode('box')}
-              className="bg-[#FFF4E5] hover:bg-[#ffe5c0] p-6 rounded-lg text-xl shadow text-left"
-            >
-              🔲 Box Breathing<br /><span className="text-sm">Respirație ghidată 4-4-4-4</span>
-            </button>
-          </div>
-        </>
-      )}
-
-      {/* Step 1 – Selectare durată */}
-      {step === 'selectDuration' && (
-        <>
-          <h2 className="text-2xl font-bold mb-4 mt-8 text-[#8E1C3B] text-center">Alege durata sesiunii</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            {durations.map(d => (
-              <button
-                key={d.sec}
-                onClick={() => pickDuration(d.sec)}
-                className="py-3 bg-[#E8F0FE] text-xl rounded hover:bg-[#d0dffb] transition"
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
-          <form onSubmit={handleCustomTime}>
-            <label className="block mb-2 text-lg font-medium">⏱️ Sau introdu timpul manual (minute):</label>
-            <div className="flex gap-3 items-center">
-              <input
-                type="number"
-                placeholder="Ex: 15"
-                value={customMinutes}
-                onChange={e => setCustomMinutes(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md"
-              />
-              <button
-                type="submit"
-                className="bg-[#8E1C3B] text-white px-5 py-3 rounded-md hover:bg-[#6e1a30]"
-              >
-                Continuă
-              </button>
-            </div>
-          </form>
-        </>
-      )}
-
-      {/* Step 2 – Mood Before */}
-      {step === 'beforeMood' && (
-        <MoodForm
-          label="🌥️ Cum te simți înainte de meditație?"
-          onSubmit={handleMoodBefore}
-        />
-      )}
-
-      {/* Step 3 – Meditație în desfășurare */}
-      {step === 'meditating' && (
-        <div className="flex flex-col items-center space-y-6">
-          <p className="text-xl text-[#8E1C3B] font-semibold">Respiră adânc... 🧘</p>
-          {mode === 'timer' ? (
-            <MindfulnessTimer duration={duration} onComplete={handleTimerComplete} />
-          ) : (
-            <BoxBreathing duration={duration} onComplete={handleTimerComplete} />
-          )}
+          ))}
         </div>
-      )}
+      </section>
 
-      {/* Step 4 – Mood After */}
-      {step === 'afterMood' && (
-        <MoodForm
-          label="🌤️ Cum te simți după meditație?"
-          onSubmit={handleMoodAfter}
-        />
-      )}
-
-      {/* Step 5 – Recomandare simplă */}
-      {step === 'recommendation' && (
-        <div className="text-center mt-10">
-          <h2 className="text-2xl font-bold text-[#8E1C3B] mb-4">✨ Recomandare</h2>
-          <p className="text-lg text-gray-700">
-            Pe baza sesiunilor tale, <strong>10 minute</strong> pare să aibă cel mai mare impact pozitiv. 🎯
-          </p>
-          <button
-            onClick={() => setStep('selectMode')}
-            className="mt-6 bg-[#8E1C3B] text-white px-6 py-3 rounded hover:bg-[#6e1a30]"
-          >
-            Începe o nouă sesiune
+      {/* 2️⃣ Selectare durată */}
+      <section className={mode ? '' : 'opacity-50 pointer-events-none'}>
+        <h2 className="text-xl font-bold text-[#8E1C3B] mb-2">⏱️ Alege durata</h2>
+        <div className="grid sm:grid-cols-4 gap-4 mb-4">
+          {durations.map(d => (
+            <button
+              key={d.sec}
+              onClick={() => setDuration(d.sec)}
+              className={`py-2 rounded ${
+                duration === d.sec ? 'bg-[#8E1C3B] text-white' : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+            >
+              {d.label}
+            </button>
+          ))}
+        </div>
+        <form onSubmit={handleCustomTime} className="flex gap-4 items-center">
+          <input
+            type="number"
+            value={customMinutes}
+            onChange={(e) => setCustomMinutes(e.target.value)}
+            className="p-2 w-40 border rounded"
+            placeholder="Minute"
+          />
+          <button type="submit" className="bg-[#FFD045] px-4 py-2 rounded font-medium">
+            Setează timp
           </button>
+        </form>
+      </section>
+
+      {/* 3️⃣ Mood Before */}
+      {mode && duration > 0 && !sessionId && step === 0 && (
+        <section>
+          <MoodForm label="🌥️ Cum te simți înainte?" onSubmit={handleStartSession} />
+          {moodBefore?.descriptor && <SoundPlayer mood={moodBefore.descriptor} />}
+        </section>
+      )}
+
+      {/* 4️⃣ Meditație */}
+     {sessionId && step === 1 && (
+  <section className="space-y-6">
+    <h2 className="text-xl text-[#8E1C3B] font-semibold">🎧 Meditează...</h2>
+
+    {/* Timer sau box breathing */}
+    {mode === 'box-breathing' ? (
+      <>
+        <BoxBreathing duration={4} onComplete={() => setStep(2)} />
+        <div className="bg-yellow-100 p-3 rounded text-sm">
+          <p>Tutorial: Inspiră 4s → Ține 4s → Expiră 4s → Pauză 4s</p>
+          
         </div>
+      </>
+    ) : (
+      <MindfulnessTimer duration={duration} onComplete={() => setStep(2)} />
+    )}
+
+    {/* Player audio */}
+    {moodBefore?.descriptor && (
+      <SoundPlayer mood={moodBefore.descriptor} />
+    )}
+
+    {/* Dovezi științifice afișate în funcție de tipul ales */}
+    <div className="grid md:grid-cols-2 gap-4 mt-6">
+      {mode === 'box-breathing' && (
+        <div className="bg-[#FFF4E5] border-l-4 border-[#FFD045] p-4 rounded shadow">
+          <h3 className="font-semibold text-[#8E1C3B] mb-1">📘 De ce funcționează Box Breathing?</h3>
+          <p className="text-sm text-gray-700">
+            Box breathing poate reduce semnificativ stresul și activarea sistemului nervos simpatic în doar câteva minute.
+          </p>
+          <a
+            href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5455070/"
+            className="text-sm text-blue-600 underline mt-2 inline-block"
+            target="_blank" rel="noreferrer"
+          >
+            Vezi studiu (PMC5455070)
+          </a>
+        </div>
+      )}
+
+      {mode === 'timer' && (
+        <div className="bg-[#E4F7ED] border-l-4 border-[#56C0BC] p-4 rounded shadow">
+          <h3 className="font-semibold text-[#1C6F5D] mb-1">🧠 Beneficiile Mindfulness</h3>
+          <p className="text-sm text-gray-700">
+            Mindfulness susținut îmbunătățește reglarea emoțională și reduce anxietatea prin modificări neuronale măsurabile.
+          </p>
+          <a
+            href="https://doi.org/10.1038/s41598-017-06020-0"
+            className="text-sm text-blue-600 underline mt-2 inline-block"
+            target="_blank" rel="noreferrer"
+          >
+            Vezi studiu (Nature Scientific Reports)
+          </a>
+        </div>
+      )}
+    </div>
+  </section>
+)}
+
+
+      {/* 5️⃣ Mood After */}
+      {sessionId && step === 2 && (
+        <section>
+          <MoodForm label="🌤️ Cum te simți după?" onSubmit={handleEndSession} />
+        </section>
+      )}
+
+      {/* 6️⃣ Recomandare finală */}
+      {step === 3 && recommendationText && (
+        <section>
+          <RecommendationCard text={recommendationText} />
+        </section>
       )}
     </div>
   );
