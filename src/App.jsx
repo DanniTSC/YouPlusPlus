@@ -8,6 +8,7 @@ import Nutrition from './components/Nutrition';
 import Disclaimer from './components/Disclaimer';
 import MindfulnessPage from './components/MindfulnessPage';
 import PrivateRoute from './components/PrivateRoute';
+import SettingsPage from './components/Setting';
 
 const App = () => {
   return (
@@ -54,6 +55,17 @@ const App = () => {
             <PrivateRoute>
               <Layout>
                 <MindfulnessPage />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <SettingsPage />
               </Layout>
             </PrivateRoute>
           }

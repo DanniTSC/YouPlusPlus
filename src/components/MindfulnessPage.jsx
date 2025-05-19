@@ -182,7 +182,7 @@ const MindfulnessPage = () => {
         <div className="bg-[#FFF4E5] border-l-4 border-[#FFD045] p-4 rounded shadow">
           <h3 className="font-semibold text-[#8E1C3B] mb-1">📘 De ce funcționează Box Breathing?</h3>
           <p className="text-sm text-gray-700">
-            Box breathing poate reduce semnificativ stresul și activarea sistemului nervos simpatic în doar câteva minute.
+            Această tehnică simplă reglează ritmul cardiac și calmează cortexul prefrontal — centrul deciziilor și al stresului.
           </p>
           <a
             href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5455070/"
@@ -198,14 +198,14 @@ const MindfulnessPage = () => {
         <div className="bg-[#E4F7ED] border-l-4 border-[#56C0BC] p-4 rounded shadow">
           <h3 className="font-semibold text-[#1C6F5D] mb-1">🧠 Beneficiile Mindfulness</h3>
           <p className="text-sm text-gray-700">
-            Mindfulness susținut îmbunătățește reglarea emoțională și reduce anxietatea prin modificări neuronale măsurabile.
+            Practicat constant, mindfulness-ul schimbă fizic structura creierului, îmbunătățind concentrarea și reducând stresul cronic.
           </p>
           <a
-            href="https://doi.org/10.1038/s41598-017-06020-0"
+            href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5455070/"
             className="text-sm text-blue-600 underline mt-2 inline-block"
             target="_blank" rel="noreferrer"
           >
-            Vezi studiu (Nature Scientific Reports)
+            Vezi studiu (PMC5455070)
           </a>
         </div>
       )}

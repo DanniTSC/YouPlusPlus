@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/authMiddleware');
+const User    = require('../models/User');
 const JournalEntry = require('../models/JournalEntry');
 const CryptoJS = require('crypto-js');
 
@@ -70,6 +71,17 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+//setari
+router.delete('/all', auth, async (req, res) => {
+  try {
+    await JournalEntry.deleteMany({ user: req.user.id });
+    res.json({ message: 'Toate intrările din jurnal au fost șterse.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Eroare la ștergerea jurnalului.' });
+  }
+});
+
 // ❌ DELETE
 router.delete('/:id', auth, async (req, res) => {
   try {
@@ -100,6 +112,30 @@ router.get('/prompt', auth, (req, res) => {
   } catch (err) {
     console.error('Eroare la generare prompt:', err);
     res.status(500).json({ message: 'Eroare server la generarea exercițiului.' });
+  }
+});
+
+
+
+//setari 
+router.get('/export', auth, async (req, res) => {
+  try {
+    const entries = await JournalEntry.find({ user: req.user.id }).sort({ createdAt: -1 });
+    // decriptăm
+    const rows = entries.map(e => {
+      const bytes   = CryptoJS.AES.decrypt(e.content, SECRET);
+      const content = bytes.toString(CryptoJS.enc.Utf8).replace(/\r?\n/g, ' ');
+      return `"${e._id}","${content}","${e.createdAt.toISOString()}"`;
+    });
+    const header = `"_id","content","createdAt"`;
+    const csv    = [header, ...rows].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="journal.csv"');
+    res.send(csv);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Eroare la exportul jurnalului.' });
   }
 });
 

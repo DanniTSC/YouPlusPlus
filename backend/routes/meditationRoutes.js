@@ -1,10 +1,13 @@
 // backend/routes/meditationRoutes.js
-const express             = require('express');
-const router              = express.Router();
-const auth                = require('../middleware/authMiddleware');
-const MeditationSession   = require('../models/MeditationSession');
+const express           = require('express');
+const router            = express.Router();
+const auth              = require('../middleware/authMiddleware');
+const MeditationSession = require('../models/MeditationSession');
+const ALPHA = parseFloat(process.env.RECO_ALPHA) || 5;
+const DURATIONS         = [300, 600, 1200];             // secunde
 
-// START a session
+
+// 1️⃣ START a session
 router.post('/start', auth, async (req, res) => {
   const { type, duration, moodBefore } = req.body;
   if (!type || !duration || !moodBefore) {
@@ -17,14 +20,14 @@ router.post('/start', auth, async (req, res) => {
       duration,
       moodBefore
     });
-    res.status(201).json({ sessionId: session._id });
+    return res.status(201).json({ sessionId: session._id });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Eroare la start session.' });
+    console.error('❌ START session error:', err);
+    return res.status(500).json({ message: 'Eroare la start session.' });
   }
 });
 
-// COMPLETE a session
+// 2️⃣ COMPLETE a session
 router.post('/complete', auth, async (req, res) => {
   const { sessionId, endedAt, moodAfter } = req.body;
   if (!sessionId || !endedAt || !moodAfter) {
@@ -36,45 +39,70 @@ router.post('/complete', auth, async (req, res) => {
       { endedAt, moodAfter },
       { new: true }
     );
-    if (!session) return res.status(404).json({ message: 'Session nu a fost găsit.' });
-    res.json({ message: 'Sesiune completată!' });
+    if (!session) {
+      return res.status(404).json({ message: 'Session nu a fost găsit.' });
+    }
+    return res.json({ message: 'Sesiune completată!' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Eroare la complete session.' });
+    console.error('❌ COMPLETE session error:', err);
+    return res.status(500).json({ message: 'Eroare la complete session.' });
   }
 });
-
-// RECOMMENDATIONS
+// RECOMMENDATIONS cu Bayesian smoothing
 router.get('/recommendations', auth, async (req, res) => {
   try {
+    // 1) Colectare și grupare
     const sessions = await MeditationSession.find({ user: req.user.id });
-    const byDur = { 300: [], 600: [], 1200: [] };
-
+    const byDur = DURATIONS.reduce((acc,d) => ({ ...acc, [d]: [] }), {});
     sessions
-      .filter(s => s.moodAfter && s.moodBefore)   // <–– FILTRAREA
+      .filter(s => s.moodAfter && s.moodBefore)
       .forEach(s => {
-        const d = s.duration;
         const delta = s.moodAfter.score - s.moodBefore.score;
-        if (byDur[d]) byDur[d].push(delta);
+        if (byDur[s.duration]) byDur[s.duration].push(delta);
       });
+
+    // 2) Prior global (overallMean)
+    const allDeltas = [].concat(...Object.values(byDur));
+    const overallMean = allDeltas.length
+      ? allDeltas.reduce((sum, d) => sum + d, 0) / allDeltas.length
+      : 0;
+
+    // 3) Calcul stat + posterior
     const stats = {};
-    let best = null, bestAvg = -Infinity;
-    for (const [dur, arr] of Object.entries(byDur)) {
+    let bestDuration  = null;
+    let bestPosterior = -Infinity;
+
+    for (const d of DURATIONS) {
+      const arr   = byDur[d];
       const count = arr.length;
-      const avg   = count ? arr.reduce((a,b)=>a+b,0)/count : 0;
-      stats[dur] = { count, avgDelta: avg };
-      if (avg>bestAvg) { bestAvg=avg; best=dur; }
+      const mean  = count ? arr.reduce((a,b) => a + b, 0) / count : 0;
+      const posterior = (ALPHA * overallMean + count * mean) / (ALPHA + count);
+
+      stats[d] = { count, mean, posterior };
+
+      // 4) Select best + tie-breaker
+      if (posterior > bestPosterior + 0.2) {
+        bestPosterior = posterior;
+        bestDuration  = d;
+      } else if (Math.abs(posterior - bestPosterior) <= 0.2) {
+        // dacă aproape egal, alege durata mai scurtă
+        bestDuration = Math.min(bestDuration, d);
+      }
     }
-    res.json({
-      stats,
-      bestDuration: best,
-      message: best
-        ? `Pentru tine, sesiunile de ${best/60} minute au cele mai mari îmbunătățiri medii (${bestAvg.toFixed(1)} puncte).`
-        : 'Nu există încă suficiente date.'
-    });
+
+    // 5) Mesaj și fallback
+    let message;
+    if (bestDuration) {
+      message = `Pentru tine, ${bestDuration/60} minute par cele mai bune.`;
+    } else {
+      bestDuration = 300; // default 5 minute
+      message = 'Nu ai suficiente date; îți recomandăm 5 minute la început.';
+    }
+
+    return res.json({ stats, bestDuration, message });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Eroare la recommendations.' });
+    return res.status(500).json({ message: 'Eroare la recommendations.' });
   }
 });
 

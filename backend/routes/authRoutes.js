@@ -77,6 +77,34 @@ router.get('/home', authMiddleware, async (req, res) => {
         res.status(500).json({ message: 'Something went wrong' });
     }
 });
+//setari
+router.get('/me', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('email name');
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Eroare la obținerea profilului.' });
+  }
+});
 
+// setari ✏️ PATCH /api/auth/me — actualizează doar name
+router.patch('/me', authMiddleware, async (req, res) => {
+  const { name } = req.body;
+  if (!name || name.trim().length < 2) {
+    return res.status(400).json({ message: 'Nume invalid.' });
+  }
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { name: name.trim() },
+      { new: true, select: 'email name' }
+    );
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Eroare la actualizarea numelui.' });
+  }
+});
 
 module.exports = router;

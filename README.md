@@ -16,6 +16,17 @@
 - 🔐 Algoritmi personalizați în funcție de obiectiv, nivel, sex
 
 ---
+Întoarce recomandarea duratei de meditație pe baza istoricului user-ului, folosind Bayesian smoothing.
+
+{
+  "stats": {
+    "300": { "count": 2, "mean": 4.5, "posterior": 4.7 },
+    "600": { "count": 5, "mean": 3.2, "posterior": 3.3 },
+    "1200": { "count": 0, "mean": 0, "posterior": 2.1 }
+  },
+  "bestDuration": 300,
+  "message": "Pentru tine, 5 minute par cele mai bune (∅ 4.7)."
+}
 
 ## ⚠️ Disclaimer Medical
 
@@ -76,3 +87,4 @@ CryptoJS (AES encryption)
 Toast Notifications
 
 RESTful API
+
