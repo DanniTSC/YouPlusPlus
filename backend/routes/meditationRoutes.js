@@ -106,4 +106,17 @@ router.get('/recommendations', auth, async (req, res) => {
   }
 });
 
+router.get('/sessions', auth, async (req, res) => {
+  try {
+    const sessions = await MeditationSession.find({
+      user: req.user.id,
+      moodAfter: { $exists: true }
+    });
+    res.json(sessions);
+  } catch (err) {
+    console.error('Eroare la fetch sessions:', err);
+    res.status(500).json({ message: 'Eroare server la obținerea sesiunilor.' });
+  }
+});
+
 module.exports = router;

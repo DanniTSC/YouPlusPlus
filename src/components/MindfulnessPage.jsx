@@ -5,6 +5,8 @@ import BoxBreathing from '../components/BoxBreathing';
 import RecommendationCard from '../components/RecommendationCard';
 import SoundPlayer from '../components/SoundPlayer';
 import { toast } from 'react-hot-toast';
+import UserStats from '../components/UserStats'
+import TooltipInfo from '../components/ToolTipInfo';
 
 const durations = [
   { label: '5 min', sec: 300 },
@@ -22,6 +24,8 @@ const MindfulnessPage = () => {
   const [moodBefore, setMoodBefore] = useState(null);
   const [recommendationText, setRecommendationText] = useState('');
   const token = localStorage.getItem('token');
+  const [refreshStats, setRefreshStats] = useState(0);
+
 
   const handleCustomTime = (e) => {
     e.preventDefault();
@@ -75,6 +79,8 @@ const MindfulnessPage = () => {
     const data = await res.json();
     setRecommendationText(data.message);
     setStep(3); // Trecem la recomandare
+    setRefreshStats(prev => prev + 1); // 🔁 Trigger actualizare UserStats
+
 
     setTimeout(() => {
       setStep(0);
@@ -84,7 +90,7 @@ const MindfulnessPage = () => {
       setMoodBefore(null);
       setRecommendationText('');
       setCustomMinutes('');
-    }, 15000);
+    }, 10000);
   };
 
   return (
@@ -94,25 +100,32 @@ const MindfulnessPage = () => {
       <section>
         <h1 className="text-3xl font-bold text-[#8E1C3B] mb-4">🧘 Alege tipul meditației</h1>
         <div className="grid sm:grid-cols-2 gap-6">
-          {['box-breathing', 'timer'].map(opt => (
-            <button
-              key={opt}
-              onClick={() => setMode(opt)}
-              className={`p-6 border rounded-lg text-left transition ${
-                mode === opt ? 'bg-[#FFD045]/40 border-[#8E1C3B]' : 'bg-gray-50'
-              }`}
-            >
-              <h2 className="text-xl font-semibold">
-                {opt === 'box-breathing' ? '🔲 Box Breathing' : '⏱ Mindfulness Timer'}
-              </h2>
-              <p className="text-sm mt-1">
-                {opt === 'box-breathing'
-                  ? 'Respirație ghidată 4-4-4-4 pentru calm instantaneu'
-                  : 'Timer cu focus pe respirație conștientă'}
-              </p>
-            </button>
-          ))}
-        </div>
+  {['box-breathing', 'timer'].map(opt => (
+    <button
+      key={opt}
+      onClick={() => setMode(opt)}
+      className={`p-6 border rounded-lg text-left transition ${
+        mode === opt ? 'bg-[#FFD045]/40 border-[#8E1C3B]' : 'bg-gray-50'
+      }`}
+    >
+      <div className="flex items-center gap-2">
+        <h2 className="text-xl font-semibold">
+          {opt === 'box-breathing' ? '🔲 Box Breathing' : '⏱ Mindfulness Timer'}
+        </h2>
+        {opt === 'box-breathing' && (
+          <TooltipInfo
+            text="Tehnica Box Breathing implică 4 pași egali: inspiră 4s → ține 4s → expiră 4s → pauză 4s. Ajută la reducerea stresului și calmarea rapidă."
+          />
+        )}
+      </div>
+      <p className="text-sm mt-1">
+        {opt === 'box-breathing'
+          ? 'Respirație ghidată 4-4-4-4 pentru calm instantaneu'
+          : 'Timer cu focus pe respirație conștientă'}
+      </p>
+    </button>
+  ))}
+</div>
       </section>
 
       {/* 2️⃣ Selectare durată */}
@@ -160,16 +173,14 @@ const MindfulnessPage = () => {
 
     {/* Timer sau box breathing */}
     {mode === 'box-breathing' ? (
-      <>
-        <BoxBreathing duration={4} onComplete={() => setStep(2)} />
-        <div className="bg-yellow-100 p-3 rounded text-sm">
-          <p>Tutorial: Inspiră 4s → Ține 4s → Expiră 4s → Pauză 4s</p>
-          
-        </div>
-      </>
-    ) : (
-      <MindfulnessTimer duration={duration} onComplete={() => setStep(2)} />
-    )}
+  <>
+    <BoxBreathing duration={4} onComplete={() => setStep(2)} />
+
+    
+  </>
+) : (
+  <MindfulnessTimer duration={duration} onComplete={() => setStep(2)} />
+)}
 
     {/* Player audio */}
     {moodBefore?.descriptor && (
@@ -227,6 +238,12 @@ const MindfulnessPage = () => {
           <RecommendationCard text={recommendationText} />
         </section>
       )}
+
+      <section className="pt-12 border-t mt-10">
+        <h2 className="text-xl font-bold text-[#8E1C3B] mb-4">📈 Rapoartele tale de meditație</h2>
+        <UserStats refresh={refreshStats} />
+      </section>
+
     </div>
   );
 };
