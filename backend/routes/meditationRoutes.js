@@ -51,9 +51,15 @@ router.post('/complete', auth, async (req, res) => {
 // RECOMMENDATIONS cu Bayesian smoothing
 router.get('/recommendations', auth, async (req, res) => {
   try {
-    // 1) Colectare și grupare
-    const sessions = await MeditationSession.find({ user: req.user.id });
+    const mood = req.query.mood; // 🆕 extrage mood din query param
+
+    // 1️⃣ Colectare filtrată
+    const query = { user: req.user.id };
+    if (mood) query['moodBefore.descriptor'] = mood;
+
+    const sessions = await MeditationSession.find(query);
     const byDur = DURATIONS.reduce((acc,d) => ({ ...acc, [d]: [] }), {});
+    
     sessions
       .filter(s => s.moodAfter && s.moodBefore)
       .forEach(s => {
@@ -61,42 +67,39 @@ router.get('/recommendations', auth, async (req, res) => {
         if (byDur[s.duration]) byDur[s.duration].push(delta);
       });
 
-    // 2) Prior global (overallMean)
+    // 2️⃣ Prior global
     const allDeltas = [].concat(...Object.values(byDur));
     const overallMean = allDeltas.length
       ? allDeltas.reduce((sum, d) => sum + d, 0) / allDeltas.length
       : 0;
 
-    // 3) Calcul stat + posterior
+    // 3️⃣ Posterior Bayesian
     const stats = {};
     let bestDuration  = null;
     let bestPosterior = -Infinity;
 
     for (const d of DURATIONS) {
-      const arr   = byDur[d];
-      const count = arr.length;
-      const mean  = count ? arr.reduce((a,b) => a + b, 0) / count : 0;
-      const posterior = (ALPHA * overallMean + count * mean) / (ALPHA + count);
+  const arr = byDur[d];
+  const count = arr.length;
+  const mean = count ? arr.reduce((a,b) => a + b, 0) / count : 0;
+  const posterior = (ALPHA * overallMean + count * mean) / (ALPHA + count);
+  stats[d] = { count, mean, posterior };
 
-      stats[d] = { count, mean, posterior };
-
-      // 4) Select best + tie-breaker
-      if (posterior > bestPosterior + 0.2) {
-        bestPosterior = posterior;
-        bestDuration  = d;
-      } else if (Math.abs(posterior - bestPosterior) <= 0.2) {
-        // dacă aproape egal, alege durata mai scurtă
-        bestDuration = Math.min(bestDuration, d);
-      }
+  if (posterior > bestPosterior) {
+    bestPosterior = posterior;
+    bestDuration = d;
+  }
     }
+      
 
-    // 5) Mesaj și fallback
+
+    // 4️⃣ Mesaj + fallback
     let message;
     if (bestDuration) {
-      message = `Pentru tine, ${bestDuration/60} minute par cele mai bune.`;
+      message = `Atunci cand esti: („${mood ?? 'toate'}”), ${bestDuration/60} minute de meditatie par cele mai eficiente.`;
     } else {
-      bestDuration = 300; // default 5 minute
-      message = 'Nu ai suficiente date; îți recomandăm 5 minute la început.';
+      bestDuration = 300;
+      message = 'Nu avem destule date. Îți recomandăm 5 minute ca început.';
     }
 
     return res.json({ stats, bestDuration, message });
@@ -105,6 +108,7 @@ router.get('/recommendations', auth, async (req, res) => {
     return res.status(500).json({ message: 'Eroare la recommendations.' });
   }
 });
+
 
 router.get('/sessions', auth, async (req, res) => {
   try {

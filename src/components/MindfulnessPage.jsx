@@ -73,11 +73,11 @@ const MindfulnessPage = () => {
     toast.success('Sesiune salvată ✅');
 
     // Fetch recomandare
-    const res = await fetch('http://localhost:5000/api/meditation/recommendations', {
-      headers: { Authorization: token },
+    const res = await fetch(`http://localhost:5000/api/meditation/recommendations?mood=${moodBefore?.descriptor}`, {
+    headers: { Authorization: token },
     });
     const data = await res.json();
-    setRecommendationText(data.message);
+    setRecommendationText(data.message.replace(/["„”()]/g, ''));
     setStep(3); // Trecem la recomandare
     setRefreshStats(prev => prev + 1); // 🔁 Trigger actualizare UserStats
 
