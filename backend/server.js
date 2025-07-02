@@ -18,16 +18,16 @@ app.use('/api/meditation', require('./routes/meditationRoutes'));
 const PORT = process.env.PORT || 5000;
 
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log('✅ MongoDB connected'))
-.catch(err => console.log('❌ MongoDB connection error:', err));
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.log(' MongoDB connection error:', err));
 
 app.get('/api/db-status', async (req, res) => {
     const dbState = mongoose.connection.readyState;
-    res.json({ status: dbState === 1 ? "🟢 Conectat" : "🔴 Deconectat" });
+    res.json({ status: dbState === 1 ? " Conectat" : "Deconectat" });
 });
 
 app.get('/test', (req, res) => {
-    res.send('🟢 Server funcționează');
+    res.send(' Server funcționează');
   });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

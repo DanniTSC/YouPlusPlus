@@ -17,9 +17,8 @@ router.get('/evaluate', auth, async (req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // 1️⃣ Încarcă user & obiceiurile de azi
   const user = await User.findById(req.user.id);
-
-  // --- 1️⃣ Obiceiuri de azi
   const habitsToday = await Habit.find({ user: req.user.id, date: today });
   const completed = habitsToday.filter(h => h.completed).length;
   const total     = habitsToday.length;
@@ -31,27 +30,16 @@ router.get('/evaluate', auth, async (req, res) => {
 
   let streakChanged = false;
 
-  // Data ultimului check (ca să nu aplicăm de două ori în aceeași zi)
+  // 2️⃣ Actualizează streak-ul o singură dată pe zi
   const lastDate = user.lastStreakDate ? new Date(user.lastStreakDate) : null;
   const isNewDay = !lastDate || lastDate.getTime() !== today.getTime();
 
   if (isNewDay) {
     if (reached50) {
-      // --- 2️⃣ cresc streak-ul
       user.streak = (user.streak || 0) + 1;
       streakChanged = true;
-
-      // --- 3️⃣ actualizez badge-urile
-      const newBadges = [];
-      if (user.streak >= 30) newBadges.push('Voință de Aur 🏅');
-      else if (user.streak >= 7) newBadges.push('Voință de Fier 💪');
-      else if (user.streak >= 3) newBadges.push('Un Nou Start 🚀');
-      user.badges = newBadges;
-    }
-    else if (failed50) {
-      // --- reset streak
+    } else if (failed50) {
       user.streak = 0;
-      // NU ating badges
       streakChanged = true;
     }
 
@@ -61,7 +49,32 @@ router.get('/evaluate', auth, async (req, res) => {
     }
   }
 
-  // --- 4️⃣ GRAFIC: Progres săptămânal
+  // 3️⃣ Acordă TOATE badge-urile meritate la streak-ul curent
+  const possible = [
+    { cond: user.streak >= 1,   name: 'Primul Pas 👣' },
+    { cond: user.streak >= 3,   name: 'Un Nou Start 🚀' },
+    { cond: user.streak >= 7,   name: 'Voință de Fier 💪' },
+    { cond: user.streak >= 14,  name: 'Două Săptămâni fără Oprire 🚧' },
+    { cond: user.streak >= 21,  name: 'Obicei de 21 Zile 🌱' },
+    { cond: user.streak >= 30,  name: 'Voință de Aur 🥇' },
+    { cond: user.streak >= 60,  name: 'Stăpânul Disciplinei 🏆' },
+    { cond: user.streak >= 100, name: 'Legenda You++ 🦸‍♂️' },
+  ];
+  // badge-uri pentru fiecare multiplu de 10
+  if (user.streak > 0 && user.streak % 10 === 0) {
+    possible.push({ cond: true, name: `X${user.streak} Streak 🔄` });
+  }
+
+  const earned = possible
+    .filter(b => b.cond && !user.badges.includes(b.name))
+    .map(b => b.name);
+
+  if (earned.length) {
+    user.badges.push(...earned);
+    await user.save();
+  }
+
+  // 4️⃣ GRAFIC: Progres săptămânal
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - today.getDay()); // Duminică
 
@@ -76,15 +89,15 @@ router.get('/evaluate', auth, async (req, res) => {
     if (h.completed) weeklyData[day] += 1;
   });
 
+  // 5️⃣ Răspuns
   res.json({
     weeklyData,
     streak: user.streak,
     badges: user.badges,
-    todayComplete: reached50 ,
-    todayFailed:   failed50 && streakChanged
+    todayComplete: reached50,
+    todayFailed: failed50 && streakChanged
   });
 });
-
 
 // ➕ POST habit
 router.post('/', auth, async (req, res) => {

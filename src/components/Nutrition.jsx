@@ -40,7 +40,7 @@ const Nutrition = () => {
     {/* LEFT: Plan Nutriție + Disclaimer */}
      <div className="flex-grow basis-2/3 min-w-0 bg-[#FFFDF9] p-8 shadow-lg rounded-lg text-[#333] text-base leading-relaxed">
       <h1 className="text-4xl font-bold text-[#8E1C3B] mb-8">
-        🍏 Planul Tău Nutrițional & Fitness
+        🏋️‍♀️ Planul Tău Nutrițional & Fitness  
       </h1>
 
       {/* Form Select */}
@@ -50,7 +50,7 @@ const Nutrition = () => {
           onChange={e => setSex(e.target.value)}
           className="p-4 text-base rounded-md border border-gray-300 focus:ring-2 focus:ring-[#FFD045]"
         >
-          <option value="">Sex</option>
+          <option value="">Gen</option>
           <option value="masculin">Masculin</option>
           <option value="feminin">Feminin</option>
         </select>

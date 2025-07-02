@@ -16,13 +16,13 @@ const BMICalculator = () => {
     setBmi(result.toFixed(1));
 
     if (result < 18.5) {
-      setCategory('Subponderal 🦴');
+      setCategory('Subponderal 🪶');
     } else if (result < 25) {
-      setCategory('Normal 💪');
+      setCategory('Greutate optimă ✅');
     } else if (result < 30) {
-      setCategory('Supraponderal 🍔');
+      setCategory('Ușor peste normă 🍽️');
     } else {
-      setCategory('Obez ⚠️');
+      setCategory('Greutate crescută ⚠️');
     }
   };
 

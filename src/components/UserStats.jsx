@@ -7,11 +7,11 @@ import {
 Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const moodLabels = {
-  anxios: '😰 Anxios',
-  stresat: '😓 Stresat',
-  neutru: '😐 Neutru',
-  calm: '😌 Calm',
-  fericit: '😊 Fericit',
+  anxios: 'Anxios',
+  stresat: 'Stresat',
+  neutru: 'Neutru',
+  calm: 'Calm',
+  fericit: 'Fericit',
 };
 
 const UserStats = ({ refresh }) => {
@@ -68,7 +68,7 @@ const UserStats = ({ refresh }) => {
             labels: getMoodLabels(moodCount.before),
             datasets: [{
               data: Object.values(moodCount.before),
-              backgroundColor: ['#f87171', '#fb923c', '#facc15', '#4ade80', '#60a5fa'],
+              backgroundColor: [ '#fb923c', '#f87171', '#facc15', '#4ade80', '#60a5fa'],
               borderWidth: 1,
             }],
           }}
@@ -100,7 +100,7 @@ const UserStats = ({ refresh }) => {
             labels: getMoodLabels(moodCount.after),
             datasets: [{
               data: Object.values(moodCount.after),
-              backgroundColor: ['#a78bfa', '#f472b6', '#fb923c', '#4ade80', '#60a5fa'],
+              backgroundColor: ['#fb923c', '#f87171', '#facc15', '#4ade80', '#60a5fa'],
               borderWidth: 1,
             }],
           }}
@@ -126,7 +126,7 @@ const UserStats = ({ refresh }) => {
 
       {/* Progress Chart */}
       <div className="bg-white p-4 rounded shadow col-span-1 md:col-span-2">
-        <h4 className="font-bold text-[#8E1C3B] mb-4">📈 Evoluția stării emoționale după meditații</h4>
+        <h4 className="font-bold text-[#8E1C3B] mb-4">📊 Evoluția stării emoționale după meditații</h4>
         <Bar
           data={{
             labels: Object.keys(progress),

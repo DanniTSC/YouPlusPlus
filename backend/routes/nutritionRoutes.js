@@ -7,7 +7,7 @@ const NutritionPlan = require('../models/NutritionPlan');
 router.post('/plan', auth, async (req, res) => {
   const { sex, goal, level } = req.body;
   if (!sex || !goal || !level) {
-    return res.status(400).json({ message: 'Sex, goal și level sunt necesare.' });
+    return res.status(400).json({ message: 'Genul, goal și level sunt necesare.' });
   }
   try {
     const preset = await NutritionPlan.findOne({ sex, goal, level });

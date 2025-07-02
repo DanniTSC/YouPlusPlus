@@ -88,7 +88,7 @@ const Home = () => {
     const reached50 = total > 0 && completed >= Math.floor(total / 2);
 
     if (reached50 && !toastFiredRef.current) {
-      toast.success('🥳 Bravo! Ai completat peste 50% din obiceiurile zilei. Streak-ul tău e salvat!');
+      toast.success(' Bravo! Ai bifat cel puțin jumătate dintre obiceiurile zilnice. Streak-ul tău e salvat!');
       toastFiredRef.current = true;
     }
 
@@ -116,7 +116,7 @@ const Home = () => {
     <div className="text-[#555352] max-w-5xl mx-auto pb-28 mt-16">
       <div className="mb-10">
         <h1 className="text-3xl md:text-4xl font-bold text-[#8E1C3B] mb-2">
-          Bun venit, {user?.name || 'Utilizator'}! 👋
+          Bun venit, {user?.name || 'Utilizator'}! 
         </h1>
         <p className="text-xl text-gray-700 italic">
           {quote || "Citat motivațional..."}

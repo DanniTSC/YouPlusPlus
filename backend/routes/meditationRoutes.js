@@ -48,48 +48,59 @@ router.post('/complete', auth, async (req, res) => {
     return res.status(500).json({ message: 'Eroare la complete session.' });
   }
 });
+
 // RECOMMENDATIONS cu Bayesian smoothing
+//endpoint get valabil doar pentru utilziatorii autentificati cu middleware auth
 router.get('/recommendations', auth, async (req, res) => {
   try {
-    const mood = req.query.mood; // 🆕 extrage mood din query param
+    const mood = req.query.mood; // extrage mood din query param
 
-    // 1️⃣ Colectare filtrată
+    // filtrez doar sesiunile userului curent cu un query in MongoDB
     const query = { user: req.user.id };
     if (mood) query['moodBefore.descriptor'] = mood;
 
     const sessions = await MeditationSession.find(query);
-    const byDur = DURATIONS.reduce((acc,d) => ({ ...acc, [d]: [] }), {});
+    //preiau toate sesiunile care respecta query-ul
     
+    const byDur = DURATIONS.reduce((acc,d) => ({ ...acc, [d]: [] }), {});
+    //initializez un obiect care mapeaza fiecare durata in secunde
+
     sessions
       .filter(s => s.moodAfter && s.moodBefore)
       .forEach(s => {
         const delta = s.moodAfter.score - s.moodBefore.score;
         if (byDur[s.duration]) byDur[s.duration].push(delta);
-      });
+      }); 
+      //pentru fiecare sesiune care are scoruri pentru before & after
+      //calculez delta, cat de mult s-a imbunatati starea
+      //si adaug valoarea in lista corespunzatoare
 
-    // 2️⃣ Prior global
+
+    // Prior global
     const allDeltas = [].concat(...Object.values(byDur));
     const overallMean = allDeltas.length
       ? allDeltas.reduce((sum, d) => sum + d, 0) / allDeltas.length
       : 0;
+      //daca nu exista date, media este 0, altfel o calculez
 
-    // 3️⃣ Posterior Bayesian
+    // Posterior Bayesian
     const stats = {};
     let bestDuration  = null;
     let bestPosterior = -Infinity;
 
     for (const d of DURATIONS) {
-  const arr = byDur[d];
-  const count = arr.length;
-  const mean = count ? arr.reduce((a,b) => a + b, 0) / count : 0;
-  const posterior = (ALPHA * overallMean + count * mean) / (ALPHA + count);
-  stats[d] = { count, mean, posterior };
+      const arr = byDur[d];
+      const count = arr.length;
+      const mean = count ? arr.reduce((a,b) => a + b, 0) / count : 0;
+      const posterior = (ALPHA * overallMean + count * mean) / (ALPHA + count);
+      stats[d] = { count, mean, posterior };
+        
 
-  if (posterior > bestPosterior) {
-    bestPosterior = posterior;
-    bestDuration = d;
+        if (posterior > bestPosterior) {
+          bestPosterior = posterior;
+          bestDuration = d;
+            }
   }
-    }
       
 
 
@@ -101,6 +112,9 @@ router.get('/recommendations', auth, async (req, res) => {
       bestDuration = 300;
       message = 'Nu avem destule date. Îți recomandăm 5 minute ca început.';
     }
+    //daca am gasit o durata cu date suficienta construiesc mesajul de recomandare cu durata optima
+    //daca nu exista date deloc dau o recomandare default
+
 
     return res.json({ stats, bestDuration, message });
   } catch (err) {

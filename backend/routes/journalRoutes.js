@@ -96,13 +96,40 @@ router.delete('/:id', auth, async (req, res) => {
 
 // 🎲 GET exercițiu random
 const prompts = [
+  // Recunoștință și pozitivitate
   "Scrie 3 lucruri pentru care ești recunoscător azi.",
   "Ce te-a făcut să zâmbești azi?",
+  "Ce moment mic ai vrea să îți amintești din ziua asta?",
+  "Care este o persoană care ți-a influențat pozitiv viața? De ce?",
+  
+  // Reflecție zilnică
+  "Ce ai învățat despre tine azi?",
+  "Care a fost cea mai provocatoare parte a zilei și cum ai reacționat?",
+  "Ce ai fi putut face mai bine azi?",
+  "Ce obicei mic ți-ar îmbunătăți ziua de mâine?",
+  
+  // Obiective și viziune
   "Ce ți-ai dori să înveți despre tine luna asta?",
+  "Unde vrei să fii peste 6 luni – emoțional, fizic, profesional?",
+  "Dacă te-ai întâlni cu versiunea ta din copilărie, ce i-ai spune?",
+  "Ce ai face dacă ai ști că nu poți eșua?",
+  
+  // Mental health & eliberare emoțională
   "Care e un gând negativ de care vrei să te eliberezi?",
-  "Scrie o scrisoare pentru 'You++' – versiunea ta viitoare peste 6 luni.",
+  "Ce emoție ai simțit cel mai intens azi?",
+  "Ce îți spui când ești prea dur cu tine?",
+  "Ce ai nevoie să îți auzi azi?",
+  
+  // Viziune & scrisori către sine
   "Scrie o scrisoare pentru 'You++' – versiunea ta viitoare peste 5 ani.",
-  "Scrie o scrisoare pentru 'You++' – versiunea ta viitoare peste 1 an."
+  "Scrie o scrisoare pentru 'You++' – versiunea ta viitoare peste 1 an.",
+  "Scrie-ți un mesaj de susținere pentru zilele în care vei simți că renunți.",
+  
+  // Creativ & motivațional
+  "Dacă viața ta ar fi un film, ce titlu ar avea azi?",
+  "Ce superputere ți-ai dori să ai azi și cum ai folosi-o?",
+  "Care sunt cele 3 lucruri care îți dau energie în ultima vreme?",
+  "Ce ți-ai spune dacă ai fi cel mai bun prieten al tău?"
 ];
 
 router.get('/prompt', auth, (req, res) => {
@@ -125,9 +152,9 @@ router.get('/export', auth, async (req, res) => {
     const rows = entries.map(e => {
       const bytes   = CryptoJS.AES.decrypt(e.content, SECRET);
       const content = bytes.toString(CryptoJS.enc.Utf8).replace(/\r?\n/g, ' ');
-      return `"${e._id}","${content}","${e.createdAt.toISOString()}"`;
+      return `"${content}","${e.createdAt.toISOString()}"`;
     });
-    const header = `"_id","content","createdAt"`;
+    const header = `"Ce ai scris","Când ai scris"`;
     const csv    = [header, ...rows].join('\n');
 
     res.setHeader('Content-Type', 'text/csv');

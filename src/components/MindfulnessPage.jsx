@@ -12,7 +12,7 @@ const durations = [
   { label: '5 min', sec: 300 },
   { label: '10 min', sec: 600 },
   { label: '20 min', sec: 1200 },
-  { label: '10 sec', sec: 10 },
+  { label: '5 sec', sec: 5 },
 ];
 
 const MindfulnessPage = () => {
