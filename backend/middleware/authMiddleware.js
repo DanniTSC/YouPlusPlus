@@ -15,3 +15,7 @@ const authMiddleware = (req, res, next) => {
 
 module.exports = authMiddleware;
 //verifica daca am jwt in header, il decodeaza si adaug utilizatorul in req users
+
+// Protejează rutele (endpoints), ca să nu poată fi accesate decât de utilizatori autentificați.
+// Verifică dacă există un token JWT valid în header-ul requestului.
+// Dacă token-ul e valid, adaugă datele userului (req.user) și lasă requestul să continue (next()).

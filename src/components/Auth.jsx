@@ -43,7 +43,7 @@ const Auth = () => {
 
   return (
     <div className="flex min-h-screen">
-      {/* Left Side */}
+      { }
       <div className="hidden md:flex w-1/2 bg-[#F7CBA4] flex-col items-center justify-center text-center p-8">
         <img src={logo} alt="You++ Logo" className="w-56 mb-6" />
         <h1 className="text-4xl font-bold text-[#8E1C3B] mb-4">You++</h1>
@@ -52,7 +52,7 @@ const Auth = () => {
         </p>
       </div>
 
-      {/* Right Side - Auth Form */}
+      { }
       <div className="flex flex-col justify-center items-center w-full md:w-1/2 px-8 py-12 bg-white">
         <h2 className="text-3xl font-semibold mb-6 text-[#555352]">
           {isSignup ? 'Creează cont' : 'Autentifică-te'}

@@ -10,3 +10,6 @@ const UserSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
+
+
+// in mongoDB se folosesc referinte pentru a nu creste dimensiunea unui singur document 

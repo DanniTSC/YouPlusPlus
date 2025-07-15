@@ -12,7 +12,6 @@ const ChatbotCoach = () => {
   //   console.log("KEY:", import.meta.env.VITE_OPENAI_KEY);
   // }, []);
   
-
   const sendMessage = async () => {
     if (!input.trim()) return;
   
@@ -38,12 +37,12 @@ const ChatbotCoach = () => {
           messages: [systemPrompt, ...newMessages],
         }),
       });
-  
+   
       const data = await response.json();
       const reply = data.choices[0].message;
       setMessages([...newMessages, reply]);
     } catch (error) {
-      setMessages([...newMessages, { role: 'assistant', content: '❌ Eroare la comunicarea cu Echo.' }]);
+      setMessages([...newMessages, { role: 'assistant', content: ' Eroare la comunicarea cu Echo.' }]);
     } finally {
       setLoading(false);
     }
@@ -51,7 +50,7 @@ const ChatbotCoach = () => {
   
   return (
     <>
-      {/* Buton plutitor */}
+      { }
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-6 right-6 p-0 bg-transparent border-none hover:scale-105 transition focus:outline-none"

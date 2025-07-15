@@ -77,6 +77,7 @@ router.get('/home', authMiddleware, async (req, res) => {
         res.status(500).json({ message: 'Something went wrong' });
     }
 });
+
 //setari
 router.get('/me', authMiddleware, async (req, res) => {
   try {
@@ -88,7 +89,7 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 });
 
-// setari ✏️ PATCH /api/auth/me — actualizează doar name
+// setari  PATCH /api/auth/me — actualizează doar name
 router.patch('/me', authMiddleware, async (req, res) => {
   const { name } = req.body;
   if (!name || name.trim().length < 2) {

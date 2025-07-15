@@ -1,4 +1,3 @@
-// src/components/Nutrition.jsx
 import React, { useState } from 'react';
 import Disclaimer from './Disclaimer';
 import BMICalculator from './BMICalculator';
@@ -37,7 +36,7 @@ const Nutrition = () => {
   return (
    <div className="flex flex-col lg:flex-row w-full gap-8 px-4 mt-10">
     
-    {/* LEFT: Plan Nutriție + Disclaimer */}
+    {/*  Plan Nutriție + Disclaimer */}
      <div className="flex-grow basis-2/3 min-w-0 bg-[#FFFDF9] p-8 shadow-lg rounded-lg text-[#333] text-base leading-relaxed">
       <h1 className="text-4xl font-bold text-[#8E1C3B] mb-8">
         🏋️‍♀️ Planul Tău Nutrițional & Fitness  
@@ -62,7 +61,7 @@ const Nutrition = () => {
         >
           <option value="">Obiectiv</option>
           <option value="slăbit">Slăbit</option>
-          <option value="masă musculară">Masă musculară</option>
+          <option value="masa_musculara">Masă musculară</option>
           <option value="menținere">Menținere</option>
         </select>
 
@@ -78,19 +77,19 @@ const Nutrition = () => {
         </select>
       </div>
 
-      {/* Generate Button */}
+      {/*  Button */}
       <button
         onClick={fetchPlan}
         disabled={!sex || !goal || !level}
         className="mb-8 bg-[#8E1C3B] text-white text-base px-8 py-3 rounded-md hover:bg-[#6e1a30] transition disabled:opacity-50"
       >
-        Generează planul personalizat
+        Afișează planul personalizat
       </button>
 
       {/* Planul generat */}
       {plan && (
         <div className="space-y-6">
-          {/* Accordion: Antrenamente */}
+          {/*  Antrenamente */}
           <div className="border rounded-lg overflow-hidden">
             <button
               onClick={() => setOpenWorkouts(!openWorkouts)}
@@ -106,7 +105,7 @@ const Nutrition = () => {
             )}
           </div>
 
-          {/* Accordion: Mese */}
+          {/*  Mese */}
           <div className="border rounded-lg overflow-hidden">
             <button
               onClick={() => setOpenMeals(!openMeals)}
@@ -122,7 +121,7 @@ const Nutrition = () => {
             )}
           </div>
 
-          {/* Accordion: Tips */}
+          {/*  Tips */}
           <div className="border rounded-lg overflow-hidden">
             <button
               onClick={() => setOpenTips(!openTips)}
@@ -146,7 +145,7 @@ const Nutrition = () => {
       </div>
     </div>
 
-    {/* RIGHT: BMI Calculator */}
+    {/* BMI Calculator */}
     <div className="w-full lg:max-w-sm mt-6 lg:mt-0">
       <BMICalculator />
     </div>

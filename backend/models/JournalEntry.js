@@ -7,3 +7,8 @@ const JournalEntrySchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('JournalEntry', JournalEntrySchema);
+
+// Are:
+// user cine a scris
+// conținutul, text criptat la nivel de backend
+// createdAt data înregistrării

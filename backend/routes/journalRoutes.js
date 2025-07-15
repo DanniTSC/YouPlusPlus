@@ -7,7 +7,7 @@ const CryptoJS = require('crypto-js');
 
 const SECRET = process.env.VITE_JOURNAL_SECRET;
 
-// 🔐 GET toate înregistrările userului (DECRIPTARE)
+//  get toate înregistrările userului (DECRIPTARE)
 router.get('/', auth, async (req, res) => {
   try {
     const entries = await JournalEntry.find({ user: req.user.id }).sort({ createdAt: -1 });
@@ -25,7 +25,7 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// ✏️ PATCH (EDITARE CU CRIPTARE)
+// Patch editare + criptare 
 router.patch('/:id', auth, async (req, res) => {
   try {
     const { content } = req.body;
@@ -52,7 +52,7 @@ router.patch('/:id', auth, async (req, res) => {
   }
 });
 
-// ➕ POST (CU CRIPTARE)
+// Post + criptare 
 router.post('/', auth, async (req, res) => {
   try {
     const { content } = req.body;
@@ -82,7 +82,7 @@ router.delete('/all', auth, async (req, res) => {
   }
 });
 
-// ❌ DELETE
+// delete 
 router.delete('/:id', auth, async (req, res) => {
   try {
     const entry = await JournalEntry.findOneAndDelete({ _id: req.params.id, user: req.user.id });
@@ -94,7 +94,7 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-// 🎲 GET exercițiu random
+//  GET exercițiu random
 const prompts = [
   // Recunoștință și pozitivitate
   "Scrie 3 lucruri pentru care ești recunoscător azi.",
@@ -151,10 +151,10 @@ router.get('/export', auth, async (req, res) => {
     // decriptăm
     const rows = entries.map(e => {
       const bytes   = CryptoJS.AES.decrypt(e.content, SECRET);
-      const content = bytes.toString(CryptoJS.enc.Utf8).replace(/\r?\n/g, ' ');
+      const content = bytes.toString(CryptoJS.enc.Utf8).replace(/\r?\n/g, ' '); //inlocuire toate caracterele newline
       return `"${content}","${e.createdAt.toISOString()}"`;
     });
-    const header = `"Ce ai scris","Când ai scris"`;
+    const header = `"Ce ai scris","Cand ai scris"`;
     const csv    = [header, ...rows].join('\n');
 
     res.setHeader('Content-Type', 'text/csv');

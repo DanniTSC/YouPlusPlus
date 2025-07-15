@@ -1,4 +1,3 @@
-// src/components/MoodForm.jsx
 import React, { useState } from 'react';
 
 const options = ['anxios','stresat','neutru','calm','fericit'];

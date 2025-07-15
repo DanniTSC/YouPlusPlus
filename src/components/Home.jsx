@@ -41,7 +41,7 @@ const Home = () => {
         setWeeklyData(evalData.weeklyData);
 
       } catch (err) {
-        console.error('❌ Eroare fetch:', err);
+        console.error('Eroare fetch:', err);
       }
     };
 
@@ -92,7 +92,7 @@ const Home = () => {
       toastFiredRef.current = true;
     }
 
-    // 🔄 Actualizare streak & badge-uri fără blocaje
+    // Actualizare streak & badge-uri fără blocaje
     const evalRes = await fetch('http://localhost:5000/api/habits/evaluate', { headers: { Authorization: token } });
     const evalData = await evalRes.json();
 

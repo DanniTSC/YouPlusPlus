@@ -1,4 +1,3 @@
-// src/components/BoxBreathing.jsx
 import React, { useState, useEffect } from 'react';
 
 const BoxBreathing = ({ duration, onComplete }) => {
@@ -18,7 +17,7 @@ const BoxBreathing = ({ duration, onComplete }) => {
     return () => clearTimeout(t);
   }, [time, phase]);
 
-  const size = 50 + (time / duration) * 100; // for animate
+  const size = 50 + (time / duration) * 100; // animatie
   return (
     <div className="flex flex-col items-center space-y-4">
       <div className="text-2xl font-semibold text-[#8E1C3B]">{phases[phase]}</div>

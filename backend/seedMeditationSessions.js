@@ -1,4 +1,4 @@
-// backend/seedMeditationSessions.js
+
 require('dotenv').config();
 const mongoose = require('mongoose');
 const MeditationSession = require('./models/MeditationSession');
@@ -8,7 +8,7 @@ const USER_ID   = process.env.TEST_USER_ID || 'YOUR_USER_ID_HERE';
 
 const now = new Date();
 const seedData = [
-  // 5 minute session → delta = 10 - 5 = 5
+ 
   {
     user:       USER_ID,
     type:       'mindfulness',
@@ -18,7 +18,7 @@ const seedData = [
     moodBefore: { descriptor: 'neutru', score: 5 },
     moodAfter:  { descriptor: 'fericit', score: 10 },
   },
-  // 10 minute session → delta = 7 - 5 = 2
+ 
   {
     user:       USER_ID,
     type:       'box-breathing',
@@ -28,7 +28,7 @@ const seedData = [
     moodBefore: { descriptor: 'neutru', score: 5 },
     moodAfter:  { descriptor: 'calm',    score: 7 },
   },
-  // 20 minute session → delta = 10 - 1 = 9
+  
   {
     user:       USER_ID,
     type:       'mindfulness',
@@ -45,18 +45,18 @@ async function seed() {
     await mongoose.connect(MONGO_URI);
     console.log('✅ MongoDB connected');
 
-    // Șterge toate sesiunile vechi ale userului
+
     await MeditationSession.deleteMany({ user: USER_ID });
     console.log('🗑️  Old sessions removed');
 
-    // Inserează sesiunile de test
+
     await MeditationSession.insertMany(seedData);
-    console.log('🌱 MeditationSession seed completed');
+    console.log(' MeditationSession seed completed');
   } catch (err) {
-    console.error('❌ Seed error:', err);
+    console.error(' Seed error:', err);
   } finally {
     await mongoose.disconnect();
-    console.log('🔌 MongoDB disconnected');
+    console.log(' MongoDB disconnected');
   }
 }
 

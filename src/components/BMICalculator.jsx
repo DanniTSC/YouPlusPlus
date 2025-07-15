@@ -37,7 +37,7 @@ const BMICalculator = () => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg text-center text-[#333] w-full">
       <h2 className="text-xl font-bold text-[#8E1C3B] mb-4 flex items-center justify-center gap-2">
-        ⚖️ Calculator BMI
+        ⚖️ Calculator IMC
       </h2>
 
       <div className="text-left">

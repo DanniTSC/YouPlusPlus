@@ -79,7 +79,7 @@ const MindfulnessPage = () => {
     const data = await res.json();
     setRecommendationText(data.message.replace(/["„”()]/g, ''));
     setStep(3); // Trecem la recomandare
-    setRefreshStats(prev => prev + 1); // 🔁 Trigger actualizare UserStats
+    setRefreshStats(prev => prev + 1); // Trigger actualizare UserStats
 
 
     setTimeout(() => {
@@ -96,7 +96,7 @@ const MindfulnessPage = () => {
   return (
     <div className="max-w-5xl mx-auto mt-12 bg-white rounded-lg shadow-md p-8 text-[#333] space-y-12">
 
-      {/* 1️⃣ Selectare tip */}
+      {/* 1️ Selectare tip */}
       <section>
         <h1 className="text-3xl font-bold text-[#8E1C3B] mb-4">🧘 Alege tipul meditației</h1>
         <div className="grid sm:grid-cols-2 gap-6">
@@ -114,7 +114,7 @@ const MindfulnessPage = () => {
         </h2>
         {opt === 'box-breathing' && (
           <TooltipInfo
-            text="Tehnica Box Breathing implică 4 pași egali: inspiră 4s → ține 4s → expiră 4s → pauză 4s. Ajută la reducerea stresului și calmarea rapidă."
+            text="Tehnica Box Breathing implică 4 pași egali: inspiră 4s → ține 4s → expiră 4s → pauză 4s. O secundă reprezintă un ciclu pentru rezultate optime. Ajută la reducerea stresului și calmarea rapidă."
           />
         )}
       </div>
@@ -128,7 +128,7 @@ const MindfulnessPage = () => {
 </div>
       </section>
 
-      {/* 2️⃣ Selectare durată */}
+      {/* 2 Selectare durată */}
       <section className={mode ? '' : 'opacity-50 pointer-events-none'}>
         <h2 className="text-xl font-bold text-[#8E1C3B] mb-2">⏱️ Alege durata</h2>
         <div className="grid sm:grid-cols-4 gap-4 mb-4">
@@ -158,7 +158,7 @@ const MindfulnessPage = () => {
         </form>
       </section>
 
-      {/* 3️⃣ Mood Before */}
+      {/* 3️ Mood Before */}
       {mode && duration > 0 && !sessionId && step === 0 && (
         <section>
           <MoodForm label="🌥️ Cum te simți înainte?" onSubmit={handleStartSession} />
@@ -166,7 +166,7 @@ const MindfulnessPage = () => {
         </section>
       )}
 
-      {/* 4️⃣ Meditație */}
+      {/* 4️ Meditație */}
      {sessionId && step === 1 && (
   <section className="space-y-6">
     <h2 className="text-xl text-[#8E1C3B] font-semibold">🎧 Meditează...</h2>
@@ -225,14 +225,14 @@ const MindfulnessPage = () => {
 )}
 
 
-      {/* 5️⃣ Mood After */}
+      {/* 5️ Mood After */}
       {sessionId && step === 2 && (
         <section>
           <MoodForm label="🌤️ Cum te simți după?" onSubmit={handleEndSession} />
         </section>
       )}
 
-      {/* 6️⃣ Recomandare finală */}
+      {/* 6️ Recomandare finală */}
       {step === 3 && recommendationText && (
         <section>
           <RecommendationCard text={recommendationText} />

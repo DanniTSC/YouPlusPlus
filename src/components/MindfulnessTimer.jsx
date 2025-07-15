@@ -1,4 +1,3 @@
-// src/components/MindfulnessTimer.jsx
 import React, { useState, useEffect } from 'react';
 
 const MindfulnessTimer = ({ duration, onComplete }) => {
@@ -25,3 +24,6 @@ const MindfulnessTimer = ({ duration, onComplete }) => {
 };
 
 export default MindfulnessTimer;
+
+// timer pentru meditație care pornește de la durata selectată și scade automat timpul, 
+// actualizând UI-ul la fiecare secundă. Când timpul expiră, se apelează automat funcția de finalizare onComplete. 

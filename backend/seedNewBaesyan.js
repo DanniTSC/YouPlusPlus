@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const MeditationSession = require('./models/MeditationSession');
 
-// Conectare la DB
 mongoose.connect('mongodb://localhost:27017/YouPlusPlusDB', {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -14,7 +13,7 @@ const seedData = [];
 const moods = ['anxios', 'stresat', 'neutru', 'calm', 'fericit'];
 const durations = [300, 600, 1200];
 
-// Generează 10 sesiuni pentru fiecare stare
+
 moods.forEach(descriptor => {
   for (let i = 0; i < 10; i++) {
     const dur = durations[Math.floor(Math.random() * durations.length)];
@@ -35,10 +34,10 @@ moods.forEach(descriptor => {
 (async () => {
   try {
     await MeditationSession.insertMany(seedData);
-    console.log('✅ Seed complet pentru sesiuni.');
+    console.log(' Seed complet pentru sesiuni.');
     process.exit();
   } catch (err) {
-    console.error('❌ Eroare la seed:', err);
+    console.error(' Eroare la seed:', err);
     process.exit(1);
   }
 })();

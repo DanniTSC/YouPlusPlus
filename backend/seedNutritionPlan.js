@@ -1,12 +1,8 @@
-// seedNutritionPlans.js
 // Script pentru popularea colecției nutritionplans din MongoDB cu preseturi de planuri
-// Rulare: node seedNutritionPlans.js
-
 require('dotenv').config();
 const mongoose = require('mongoose');
 const NutritionPlan = require('./models/NutritionPlan');
 
-// URL-ul de conectare la MongoDB, definit în fișierul .env
 const MONGO_URI = process.env.MONGO_URI;
 
 const seedData = [

@@ -1,4 +1,3 @@
-// src/components/RecommendationCard.jsx
 import React from 'react';
 
 const RecommendationCard = ({ text }) => (

@@ -4,7 +4,7 @@ const Habit = require('../models/Habit');
 const User = require('../models/User');
 const auth = require('../middleware/authMiddleware');
 
-// 📥 GET toate obiceiurile de azi
+// GET toate obiceiurile de azi
 router.get('/', auth, async (req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -12,12 +12,12 @@ router.get('/', auth, async (req, res) => {
   res.json(habits);
 });
 
-// ✅ EVALUARE Streak, Badge-uri, Grafic + todayComplete + todayFailed
+// Evaluare Streak, Badge-uri, Grafic + todayComplete + todayFailed
 router.get('/evaluate', auth, async (req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // 1️⃣ Încarcă user & obiceiurile de azi
+  // Încarcă user & obiceiurile de azi
   const user = await User.findById(req.user.id);
   const habitsToday = await Habit.find({ user: req.user.id, date: today });
   const completed = habitsToday.filter(h => h.completed).length;
@@ -30,7 +30,7 @@ router.get('/evaluate', auth, async (req, res) => {
 
   let streakChanged = false;
 
-  // 2️⃣ Actualizează streak-ul o singură dată pe zi
+  // Actualizează streak-ul o singură dată pe zi
   const lastDate = user.lastStreakDate ? new Date(user.lastStreakDate) : null;
   const isNewDay = !lastDate || lastDate.getTime() !== today.getTime();
 
@@ -49,7 +49,7 @@ router.get('/evaluate', auth, async (req, res) => {
     }
   }
 
-  // 3️⃣ Acordă TOATE badge-urile meritate la streak-ul curent
+  // Acordă Toate badge-urile meritate la streak-ul curent
   const possible = [
     { cond: user.streak >= 1,   name: 'Primul Pas 👣' },
     { cond: user.streak >= 3,   name: 'Un Nou Start 🚀' },
@@ -74,7 +74,7 @@ router.get('/evaluate', auth, async (req, res) => {
     await user.save();
   }
 
-  // 4️⃣ GRAFIC: Progres săptămânal
+  // Grafic : Progres săptămânal
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - today.getDay()); // Duminică
 
@@ -89,7 +89,7 @@ router.get('/evaluate', auth, async (req, res) => {
     if (h.completed) weeklyData[day] += 1;
   });
 
-  // 5️⃣ Răspuns
+  //  Răspuns
   res.json({
     weeklyData,
     streak: user.streak,
@@ -99,7 +99,7 @@ router.get('/evaluate', auth, async (req, res) => {
   });
 });
 
-// ➕ POST habit
+//  POST habit
 router.post('/', auth, async (req, res) => {
   const { name } = req.body;
   const habit = new Habit({ user: req.user.id, name });
@@ -107,7 +107,7 @@ router.post('/', auth, async (req, res) => {
   res.status(201).json(habit);
 });
 
-// 📝 PATCH toggle completed
+// PATCH toggle completed
 router.patch('/:id', auth, async (req, res) => {
   const habit = await Habit.findOneAndUpdate(
     { _id: req.params.id, user: req.user.id },
@@ -117,7 +117,7 @@ router.patch('/:id', auth, async (req, res) => {
   res.json(habit);
 });
 
-// ❌ DELETE habit
+//  DELETE habit
 router.delete('/:id', auth, async (req, res) => {
   await Habit.findOneAndDelete({ _id: req.params.id, user: req.user.id });
   res.json({ message: 'Șters cu succes' });

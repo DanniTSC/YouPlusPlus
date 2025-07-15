@@ -19,7 +19,7 @@ const StreakChart = ({ data }) => {
     datasets: [
       {
         label: 'Obiceiuri completate',
-        data: data, // [3, 5, 7, 2, 6, 4, 0] – exemplu
+        data: data, 
         backgroundColor: '#56C0BC',
         borderRadius: 6,
         barThickness: 30,

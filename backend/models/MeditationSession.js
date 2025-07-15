@@ -26,3 +26,10 @@ const MeditationSessionSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model('MeditationSession', MeditationSessionSchema);
+
+
+// user – cine a făcut sesiunea
+// type – tipul („box-breathing” sau „mindfulness”)
+// duration – durata în secunde
+// startedAt, endedAt
+// moodBefore și moodAfter – starea și scorul emoțional înainte și după sesiune

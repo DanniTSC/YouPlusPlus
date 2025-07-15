@@ -1,4 +1,3 @@
-// src/components/Journal.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { FaTrash } from 'react-icons/fa';
 import Modal from '../components/Modal';
@@ -12,7 +11,7 @@ const Journal = () => {
   const autoSaveTimer = useRef(null);
   const token = localStorage.getItem('token');
 
-  // Fetch all journal entries (backend returns decrypted content)
+  // iau continutul decriptat
   const fetchEntries = async () => {
     try {
       const res = await fetch('http://localhost:5000/api/journal', {
@@ -29,7 +28,7 @@ const Journal = () => {
     }
   };
 
-  // Save a new entry (send raw content; backend will encrypt)
+  // salvez continut nou ce va fi criptat eventual
   const saveEntry = async () => {
     if (!content.trim()) return;
     try {
@@ -52,7 +51,7 @@ const Journal = () => {
     }
   };
 
-  // Delete an entry
+
   const deleteEntry = async (id) => {
     try {
       const res = await fetch(`http://localhost:5000/api/journal/${id}`, {
@@ -69,7 +68,7 @@ const Journal = () => {
     }
   };
 
-  // Update an existing entry
+  // Update 
   const updateEntry = async () => {
     if (!selectedEntry?.content.trim()) return;
     try {
@@ -92,7 +91,7 @@ const Journal = () => {
     }
   };
 
-  // Get a random prompt
+  // random exercise
   const getPrompt = async () => {
     try {
       const res = await fetch('http://localhost:5000/api/journal/prompt', {
@@ -109,18 +108,18 @@ const Journal = () => {
     }
   };
 
-  // Open modal to edit
+  // deschis modal pentru editare 
   const handleEntryClick = (entry) => {
     setSelectedEntry(entry);
     setShowModal(true);
   };
 
-  // Initial load
+ 
   useEffect(() => {
     fetchEntries();
   }, []);
 
-  // Auto-save draft every 30s
+  // Auto-save la fiecare 30s
   useEffect(() => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     autoSaveTimer.current = setTimeout(() => {
